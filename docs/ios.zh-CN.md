@@ -6,7 +6,15 @@
 
 上游最低系统版本为 iOS / iPadOS 16.2，芯片要求 A12 或更新。
 
-本分支提供面向 iPad 第九代和 iPadOS 15.5 的实验构建。在 fork 的 Actions 中打开 **iPadOS 15.5 TrollStore** 的成功构建，从同名构建产物解压出 `Hitode-iPadOS15.5-TrollStore.ipa` 和 SHA-256 校验文件。15.5 使用外部 JIT，游戏运行和横屏切换仍需真机验证。
+### iPad 第九代与 iPadOS 15.5（实验分支）
+
+`ipados-15.5` 分支沿用上游的 A12 芯片要求。Tauri、Xcode、CocoaPods、Rust 和静态 FFmpeg 都以 15.5 为部署目标。启动器按 Safari 15.5 构建。进入游戏或返回游戏库时，15.5 使用 tao 控制器已有的旋转请求，16 及以上使用窗口场景的旋转接口。
+
+推送适配分支会触发 **iPadOS 15.5 TrollStore** 工作流。需要重建同一提交时，在 fork 的 Actions 中打开对应运行，选择 **Re-run all jobs**。也可以在 Apple 芯片 Mac 上执行 `python3 tools/macos/package_launcher.py ios --trollstore`，所需工具见[构建文档](building.md#ios-launcher)。
+
+工作流检查主应用的 iPad 设备标识、主程序和扩展等二进制的最低系统版本，以及 TrollStore 包的签名权限。成功后，从运行页面下载同名构建产物，解压得到 `Hitode-iPadOS15.5-TrollStore.ipa` 和 `SHA256SUMS.txt`。在解压目录执行 `shasum -a 256 -c SHA256SUMS.txt` 可校验下载。
+
+15.5 的运行效果仍需真机验证。测试时先确认游戏库能显示和导入文件夹，再确认设置页识别到外部 JIT。随后启动一款已知可运行的游戏，检查画面、声音、触控和横屏，退出后检查游戏库能恢复正常旋转。
 
 ## iOS / iPadOS 16.2 至 17.3.1
 
