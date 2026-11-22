@@ -156,8 +156,11 @@ def build(jobs: int, ffmpeg_only: bool, mobile: str | None = None) -> dict:
             wine_dist = os.environ.get('ADV_WINE_DIST')
             wine = (f"export ADV_WINE_DIST={shlex.quote(str(Path(wine_dist).resolve()))}\n"
                     if wine_dist else '')
+            ios_target = (f"export IPHONEOS_DEPLOYMENT_TARGET='{profile['minimum_ios']}'\n"
+                          if mobile == 'ios' else '')
             wrapper.write_text('#!/bin/sh\n'
                                f"export FFMPEG_DIR='{prefix}'\n"
+                               f"{ios_target}"
                                f"{wine}"
                                "export LIBCLANG_PATH='/Library/Developer/CommandLineTools/usr/lib'\n"
                                "export CARGO_PROFILE_RELEASE_STRIP=debuginfo\n"

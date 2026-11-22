@@ -17,8 +17,10 @@
   --sel: rgba(24, 24, 22, 0.08);
   --danger: #c0392b;
   --pop: #ffffff;
-  --accent: #3767d6;
-  --on-accent: #ffffff;
+  --accent-rgb: 55 103 214;
+  --accent: rgb(var(--accent-rgb));
+  --on-accent-rgb: 255 255 255;
+  --on-accent: rgb(var(--on-accent-rgb));
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -36,9 +38,9 @@
   --pop: #222224;
   --chart: #5b86e8;
 }
-:root[data-accent="green"] { --accent: #2d7556; }
-:root[data-accent="graphite"] { --accent: #3f3f44; }
-:root[data-theme="dark"][data-accent="graphite"] { --accent: #dcdcdf; --on-accent: #141415; }
+:root[data-accent="green"] { --accent-rgb: 45 117 86; }
+:root[data-accent="graphite"] { --accent-rgb: 63 63 68; }
+:root[data-theme="dark"][data-accent="graphite"] { --accent-rgb: 220 220 223; --on-accent-rgb: 20 20 21; }
 
 /* Phone safe areas; `?phone` in a desktop browser simulates a notched phone. */
 :root { --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); --safe-left: env(safe-area-inset-left, 0px); --safe-right: env(safe-area-inset-right, 0px); }

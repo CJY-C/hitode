@@ -28,7 +28,7 @@
     padding: 2px 6px 2px 12px;
     border: 1px solid var(--line);
     border-radius: 10px;
-    background: color-mix(in srgb, var(--accent) 5%, var(--bg));
+    background: linear-gradient(rgb(var(--accent-rgb) / 5%) 0 0), var(--bg);
     color: var(--fg);
     font-size: 13px;
   }

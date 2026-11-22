@@ -4,7 +4,9 @@
 
 ## 支持的设备
 
-最低系统版本为 iOS / iPadOS 16.2，芯片要求 A12 或更新。
+上游最低系统版本为 iOS / iPadOS 16.2，芯片要求 A12 或更新。
+
+本分支提供面向 iPad 第九代和 iPadOS 15.5 的实验构建。在 fork 的 Actions 中打开 **iPadOS 15.5 TrollStore** 的成功构建，从同名构建产物解压出 `Hitode-iPadOS15.5-TrollStore.ipa` 和 SHA-256 校验文件。15.5 使用外部 JIT，游戏运行和横屏切换仍需真机验证。
 
 ## iOS / iPadOS 16.2 至 17.3.1
 

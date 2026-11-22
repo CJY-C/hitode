@@ -1,0 +1,53 @@
+name: iPadOS 15.5 TrollStore
+
+on:
+  push:
+    branches: [ipados-15.5]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ipa:
+    runs-on: macos-26
+    timeout-minutes: 150
+    env:
+      CARGO_INCREMENTAL: '0'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+      - name: Prepare the iOS toolchain
+        run: |
+          sudo xcode-select --switch /Applications/Xcode_26.6.app
+          rustup toolchain install 1.99.1 --profile minimal --target aarch64-apple-ios --no-self-update
+          rustup default 1.99.1
+          brew install ldid
+          npm install --global "$(node --print "require('./apps/adv-launcher/package.json').packageManager")"
+          pnpm --dir apps/adv-launcher install --frozen-lockfile
+      - name: Check the launcher and package the app
+        run: |
+          pnpm --dir apps/adv-launcher check
+          pnpm --dir apps/adv-launcher test
+          python3 -m unittest discover -s tools/macos
+          python3 tools/macos/package_launcher.py ios --trollstore
+      - name: Verify the final IPA
+        run: |
+          mkdir -p "$RUNNER_TEMP/dist"
+          ipa=Hitode-iPadOS15.5-TrollStore.ipa
+          mv target/package/ios/Hitode-TrollStore.ipa "$RUNNER_TEMP/dist/$ipa"
+          ditto -x -k "$RUNNER_TEMP/dist/$ipa" "$RUNNER_TEMP/ipa"
+          python3 tools/ios/check_ipados15.py "$RUNNER_TEMP/ipa/Payload/Hitode.app"
+          python3 tools/privacy/scan.py --artifacts "$RUNNER_TEMP/dist/$ipa"
+          cd "$RUNNER_TEMP/dist"
+          shasum -a 256 "$ipa" > SHA256SUMS.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: iPadOS 15.5 TrollStore
+          path: ${{ runner.temp }}/dist/
+          retention-days: 14
+          if-no-files-found: error

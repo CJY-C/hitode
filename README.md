@@ -65,7 +65,7 @@ To find out whether your game runs, import it and try. If it will not start, fre
 |---|---|---|
 | macOS (Apple silicon) | Supported | |
 | Android (ARMv8-A, 64-bit) | Supported | |
-| iOS / iPadOS | Supported | Targets iOS / iPadOS 16.2 and later on A12 or newer. Sideloading and JIT setup depend on the system version. See [the iOS guide](docs/ios.zh-CN.md) (Chinese) |
+| iOS / iPadOS | Supported | Upstream targets iOS / iPadOS 16.2 and later on A12 or newer. This fork targets iPadOS 15.5 on iPad (9th generation) for device testing. Sideloading and JIT setup depend on the system version. See [the iOS guide](docs/ios.zh-CN.md) (Chinese) |
 
 ## Download
 

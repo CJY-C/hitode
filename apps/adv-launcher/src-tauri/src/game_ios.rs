@@ -12,9 +12,9 @@ use adv_shell::{
 };
 use block2::RcBlock;
 use objc2::{
-    MainThreadMarker, class, msg_send,
+    MainThreadMarker, msg_send,
     rc::{Allocated, Retained},
-    runtime::{AnyObject, ProtocolObject},
+    runtime::{AnyClass, AnyObject, ProtocolObject},
 };
 use objc2_avf_audio::{
     AVAudioSession, AVAudioSessionCategoryPlayback, AVAudioSessionInterruptionNotification,
@@ -265,7 +265,6 @@ fn hold_landscape(view: &UIView, landscape: bool) {
             return;
         };
         let _: () = msg_send![controller, setSupportedInterfaceOrientations: mask];
-        let _: () = msg_send![controller, setNeedsUpdateOfSupportedInterfaceOrientations];
         // tao's setters request the appearance updates themselves.
         let _: () = msg_send![controller, setPrefersStatusBarHidden: landscape];
         // Auto-hiding makes every touch reveal the indicator and suppresses
@@ -274,12 +273,19 @@ fn hold_landscape(view: &UIView, landscape: bool) {
         let _: () = msg_send![controller, setPrefersHomeIndicatorAutoHidden: false];
         let edges: usize = if landscape { 15 } else { 0 };
         let _: () = msg_send![controller, setPreferredScreenEdgesDeferringSystemGestures: edges];
+        // On iOS 15 tao's orientation setter already calls attemptRotationToDeviceOrientation.
+        if !objc2::available!(ios = 16.0) {
+            return;
+        }
+        let _: () = msg_send![controller, setNeedsUpdateOfSupportedInterfaceOrientations];
         let scene: *mut AnyObject = msg_send![window, windowScene];
         let Some(scene) = scene.as_ref() else {
             return;
         };
-        let preferences: Allocated<AnyObject> =
-            msg_send![class!(UIWindowSceneGeometryPreferencesIOS), alloc];
+        let Some(preferences_class) = AnyClass::get(c"UIWindowSceneGeometryPreferencesIOS") else {
+            return;
+        };
+        let preferences: Allocated<AnyObject> = msg_send![preferences_class, alloc];
         let preferences: Retained<AnyObject> =
             msg_send![preferences, initWithInterfaceOrientations: mask];
         let _: () = msg_send![

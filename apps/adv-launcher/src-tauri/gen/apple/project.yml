@@ -2,7 +2,7 @@ name: adv-launcher
 options:
   bundleIdPrefix: org.hitode.launcher
   deploymentTarget:
-    iOS: 16.2
+    iOS: 15.5
 fileGroups: [../../src]
 configs:
   debug: debug

@@ -199,7 +199,7 @@
   .edition { display: block; width: 100%; font: inherit; margin-top: 6px; }
   .report {
     --surface: #fbfbfa;
-    --tint: color-mix(in srgb, var(--accent) 8%, transparent);
+    --tint: rgb(var(--accent-rgb) / 8%);
     position: relative;
     height: 100%;
     overflow: clip;
@@ -208,7 +208,7 @@
   }
   :global(:root[data-theme="dark"]) .report {
     --surface: #1c1c1e;
-    --tint: color-mix(in srgb, var(--accent) 16%, transparent);
+    --tint: rgb(var(--accent-rgb) / 16%);
   }
   .stage {
     position: relative;
@@ -564,7 +564,7 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    border: 2px solid color-mix(in srgb, var(--on-accent) 35%, transparent);
+    border: 2px solid rgb(var(--on-accent-rgb) / 35%);
     border-top-color: var(--on-accent);
     animation: spin 0.8s linear infinite;
     box-sizing: border-box;

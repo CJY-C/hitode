@@ -56,7 +56,7 @@
     margin: 12px 20px 0;
     padding: 10px 12px;
     border-radius: 12px;
-    background: color-mix(in srgb, var(--accent) 14%, var(--bg));
+    background: linear-gradient(rgb(var(--accent-rgb) / 14%) 0 0), var(--bg);
     display: flex;
     align-items: center;
     gap: 12px;

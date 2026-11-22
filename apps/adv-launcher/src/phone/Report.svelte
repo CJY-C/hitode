@@ -212,7 +212,7 @@
 <style>
   .edition { display: block; width: 100%; font: inherit; margin-top: 6px; }
   .report {
-    --tint: color-mix(in srgb, var(--accent) 8%, transparent);
+    --tint: rgb(var(--accent-rgb) / 8%);
     flex: 1 1 0;
     min-height: 0;
     display: flex;
@@ -222,7 +222,7 @@
     color: var(--fg);
   }
   :global(:root[data-theme="dark"]) .report {
-    --tint: color-mix(in srgb, var(--accent) 16%, transparent);
+    --tint: rgb(var(--accent-rgb) / 16%);
   }
   .dlg {
     flex: 1 1 0;
@@ -552,7 +552,7 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    border: 2px solid color-mix(in srgb, var(--on-accent) 35%, transparent);
+    border: 2px solid rgb(var(--on-accent-rgb) / 35%);
     border-top-color: var(--on-accent);
     animation: spin 0.8s linear infinite;
     box-sizing: border-box;
