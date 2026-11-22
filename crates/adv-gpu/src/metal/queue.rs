@@ -359,21 +359,81 @@ impl MainNotifier {
     }
 }
 
+type SharedEventHandler = dyn Fn(NonNull<ProtocolObject<dyn MTLSharedEvent>>, u64);
+
+struct SharedEventNotificationEncoding;
+
+// SAFETY: Clang's 64-bit encoding for MTLSharedEventNotificationBlock:
+// void (^)(id<MTLSharedEvent>, uint64_t). Metal inspects this at registration.
+unsafe impl block2::ManualBlockEncoding for SharedEventNotificationEncoding {
+    type Arguments = (NonNull<ProtocolObject<dyn MTLSharedEvent>>, u64);
+    type Return = ();
+    const ENCODING_CSTR: &'static std::ffi::CStr = cr#"v24@?0@"<MTLSharedEvent>"8Q16"#;
+}
+
+fn notification_block(callback: Box<dyn FnOnce() + Send>) -> block2::RcBlock<SharedEventHandler> {
+    let callback = Mutex::new(Some(callback));
+    block2::RcBlock::with_encoding::<_, _, _, SharedEventNotificationEncoding>(
+        move |_: NonNull<ProtocolObject<dyn MTLSharedEvent>>, _: u64| {
+            if let Some(callback) = callback.lock().unwrap().take() {
+                callback();
+            }
+        },
+    )
+}
+
 fn notify(
     event: &Object<dyn MTLSharedEvent>,
     listener: &MTLSharedEventListener,
     token: Token,
     callback: Box<dyn FnOnce() + Send>,
 ) {
-    let callback = Mutex::new(Some(callback));
-    let block = block2::RcBlock::new(
-        move |_: NonNull<ProtocolObject<dyn MTLSharedEvent>>, _: u64| {
-            if let Some(callback) = callback.lock().unwrap().take() {
-                callback();
-            }
-        },
-    );
+    let block = notification_block(callback);
     unsafe {
         event.notifyListener_atValue_block(listener, token.0, block2::RcBlock::as_ptr(&block));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::ffi::{CStr, c_char, c_void};
+    use std::sync::mpsc;
+
+    // spec: IOS-APP-2
+    #[test]
+    fn shared_event_block_carries_the_clang_signature() {
+        unsafe extern "C" {
+            fn _Block_signature(block: *const c_void) -> *const c_char;
+        }
+        let block = notification_block(Box::new(|| {}));
+        // SAFETY: the Blocks runtime reads the descriptor of this live heap block.
+        let signature = unsafe { _Block_signature(block2::RcBlock::as_ptr(&block).cast()) };
+        assert!(!signature.is_null(), "Metal requires a block signature");
+        // SAFETY: a non-null signature points to a NUL-terminated ABI encoding.
+        let signature = unsafe { CStr::from_ptr(signature) };
+        assert_eq!(signature, cr#"v24@?0@"<MTLSharedEvent>"8Q16"#);
+    }
+
+    // spec: IOS-APP-2
+    #[test]
+    fn shared_event_reports_reached_and_future_values_once() {
+        let (_device, mut queue) = test_device!(DeviceOptions::default());
+        let (done, received) = mpsc::channel();
+        let pending = done.clone();
+        let timeout = Duration::from_secs(10);
+
+        queue.inner.event.setSignaledValue(1);
+        queue.on_complete(Token(2), Box::new(move || pending.send(2).unwrap()));
+        queue.on_complete(Token(1), Box::new(move || done.send(1).unwrap()));
+        assert_eq!(received.recv_timeout(timeout), Ok(1));
+
+        queue.inner.event.setSignaledValue(2);
+        assert_eq!(received.recv_timeout(timeout), Ok(2));
+        queue.inner.event.setSignaledValue(3);
+        assert_eq!(
+            received.recv_timeout(timeout),
+            Err(mpsc::RecvTimeoutError::Disconnected)
+        );
     }
 }

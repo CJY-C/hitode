@@ -29,6 +29,10 @@ jobs:
           brew install ldid
           npm install --global "$(node --print "require('./apps/adv-launcher/package.json').packageManager")"
           pnpm --dir apps/adv-launcher install --frozen-lockfile
+      - name: Test Metal shared event notifications
+        env:
+          ADV_GPU_REQUIRE_BACKEND: '1'
+        run: cargo test --locked -p adv-gpu --lib metal::queue::tests::shared_event
       - name: Check the launcher and package the app
         run: |
           pnpm --dir apps/adv-launcher check
